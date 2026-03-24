@@ -5,18 +5,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 from uuid import uuid4
-from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, field_validator
 
 
-APP_TIMEZONE = ZoneInfo("Asia/Shanghai")
-
-
 def local_now_iso() -> str:
-    """Return the current Asia/Shanghai time as an ISO 8601 string."""
+    """Return the current system-local time as an ISO 8601 string."""
 
-    return datetime.now(APP_TIMEZONE).replace(microsecond=0).isoformat()
+    return datetime.now().astimezone().replace(microsecond=0).isoformat()
 
 
 def new_job_id() -> str:

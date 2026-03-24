@@ -38,8 +38,9 @@ def test_environment(
         workspace = settings.workspace_root / job_id
         workspace.mkdir(parents=True, exist_ok=True)
         log_file = workspace / "run.log"
+        started_at = local_now_iso()
         log_file.write_text(
-            "# started_at=2026-01-01T08:00:00+08:00\n"
+            f"# started_at={started_at}\n"
             f"# cwd={workspace}\n"
             "$ fake-command --job test\n"
             "[1/1] running...\n"
@@ -52,7 +53,7 @@ def test_environment(
             workspace=str(workspace),
             log_file=str(log_file),
             pid=99999,
-            started_at=local_now_iso(),
+            started_at=started_at,
         )
         db.update_job(
             job_id,

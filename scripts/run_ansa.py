@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 from pathlib import Path
 import sys
 from typing import Any
-from zoneinfo import ZoneInfo
 
 
 def local_now_iso() -> str:
-    """Return the current Asia/Shanghai timestamp as ISO 8601."""
+    """Return the current system-local timestamp as ISO 8601."""
 
-    from datetime import datetime
-
-    return datetime.now(ZoneInfo("Asia/Shanghai")).replace(microsecond=0).isoformat()
+    return datetime.now().astimezone().replace(microsecond=0).isoformat()
 
 
 def build_parser() -> argparse.ArgumentParser:
