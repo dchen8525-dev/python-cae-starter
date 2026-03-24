@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, field_validator
 
 
-def utc_now_iso() -> str:
-    """Return the current UTC time as an ISO 8601 string."""
+APP_TIMEZONE = ZoneInfo("Asia/Shanghai")
 
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+def local_now_iso() -> str:
+    """Return the current Asia/Shanghai time as an ISO 8601 string."""
+
+    return datetime.now(APP_TIMEZONE).replace(microsecond=0).isoformat()
 
 
 def new_job_id() -> str:

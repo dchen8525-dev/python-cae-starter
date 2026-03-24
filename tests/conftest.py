@@ -6,7 +6,7 @@ import pytest
 
 from app.core.config import settings
 from app.core.database import db
-from app.core.models import JobStatus, utc_now_iso
+from app.core.models import JobStatus, local_now_iso
 from app.services.job_manager import job_manager
 
 
@@ -39,7 +39,7 @@ def test_environment(
         workspace.mkdir(parents=True, exist_ok=True)
         log_file = workspace / "run.log"
         log_file.write_text(
-            "# started_at=2026-01-01T00:00:00+00:00\n"
+            "# started_at=2026-01-01T08:00:00+08:00\n"
             f"# cwd={workspace}\n"
             "$ fake-command --job test\n"
             "[1/1] running...\n"
@@ -52,7 +52,7 @@ def test_environment(
             workspace=str(workspace),
             log_file=str(log_file),
             pid=99999,
-            started_at=utc_now_iso(),
+            started_at=local_now_iso(),
         )
         db.update_job(
             job_id,
@@ -60,7 +60,7 @@ def test_environment(
             workspace=str(workspace),
             log_file=str(log_file),
             return_code=0,
-            finished_at=utc_now_iso(),
+            finished_at=local_now_iso(),
         )
 
     monkeypatch.setattr(job_manager, "run_job", fake_run_job)

@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 from pathlib import Path
 import sys
 from typing import Any
+from zoneinfo import ZoneInfo
 
 
-def utc_now_iso() -> str:
-    """Return the current UTC timestamp as ISO 8601."""
+def local_now_iso() -> str:
+    """Return the current Asia/Shanghai timestamp as ISO 8601."""
 
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    from datetime import datetime
+
+    return datetime.now(ZoneInfo("Asia/Shanghai")).replace(microsecond=0).isoformat()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -58,7 +60,7 @@ def write_report(output_dir: Path, args: argparse.Namespace) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     report_file = output_dir / "run_ansa_report.txt"
     lines = [
-        f"timestamp={utc_now_iso()}",
+        f"timestamp={local_now_iso()}",
         f"cwd={Path.cwd()}",
         f"input_file={args.input_file}",
         f"deck={args.deck}",
@@ -86,7 +88,7 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
 
-    print(f"[run_ansa] started_at={utc_now_iso()}", flush=True)
+    print(f"[run_ansa] started_at={local_now_iso()}", flush=True)
     print(f"[run_ansa] cwd={Path.cwd()}", flush=True)
     print(f"[run_ansa] argv={sys.argv}", flush=True)
     print(f"[run_ansa] input_file={args.input_file or '<empty>'}", flush=True)

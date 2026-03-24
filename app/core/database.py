@@ -7,7 +7,7 @@ import sqlite3
 from typing import Any, Iterator
 
 from app.core.config import settings
-from app.core.models import JobRecord, JobStatus, utc_now_iso
+from app.core.models import JobRecord, JobStatus, local_now_iso
 
 
 class Database:
@@ -156,7 +156,7 @@ class Database:
     def mark_incomplete_jobs_failed(self) -> int:
         """Mark jobs left unfinished before a service restart as failed."""
 
-        finished_at = utc_now_iso()
+        finished_at = local_now_iso()
         with self.connection() as connection:
             cursor = connection.execute(
                 """

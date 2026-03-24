@@ -16,8 +16,8 @@ from app.core.models import (
     JobRecord,
     JobResponse,
     JobStatus,
+    local_now_iso,
     new_job_id,
-    utc_now_iso,
 )
 from app.services.process_runner import ProcessRunner
 
@@ -70,7 +70,7 @@ class JobManager:
             pid=None,
             return_code=None,
             error_message=None,
-            created_at=utc_now_iso(),
+            created_at=local_now_iso(),
             started_at=None,
             finished_at=None,
         )
@@ -114,11 +114,11 @@ class JobManager:
                 job_id,
                 status=JobStatus.FAILED,
                 error_message=f"No adapter registered for tool '{job.tool}'.",
-                finished_at=utc_now_iso(),
+                finished_at=local_now_iso(),
             )
             return
 
-        started_at = utc_now_iso()
+        started_at = local_now_iso()
         logger.info(
             "Starting job execution job_id=%s tool=%s params=%s",
             job_id,
@@ -185,7 +185,7 @@ class JobManager:
                 log_file=result.log_file,
                 return_code=result.return_code,
                 error_message=parsed.get("error_message"),
-                finished_at=utc_now_iso(),
+                finished_at=local_now_iso(),
             )
             logger.info(
                 "Job %s status transition running->%s return_code=%s error_message=%s",
@@ -200,7 +200,7 @@ class JobManager:
                 job_id,
                 status=JobStatus.FAILED,
                 error_message=str(exc),
-                finished_at=utc_now_iso(),
+                finished_at=local_now_iso(),
             )
         finally:
             self._processes.pop(job_id, None)
@@ -257,7 +257,7 @@ class JobManager:
                     job_id,
                     status=JobStatus.CANCELLED,
                     error_message="Job cancelled before process start.",
-                    finished_at=utc_now_iso(),
+                    finished_at=local_now_iso(),
                 )
                 return JobResponse(
                     job_id=job_id,
@@ -271,7 +271,7 @@ class JobManager:
                 status=JobStatus.CANCELLED,
                 return_code=process.returncode,
                 error_message="Job cancelled by user.",
-                finished_at=utc_now_iso(),
+                finished_at=local_now_iso(),
             )
             logger.info("Cancelled job %s", job_id)
             return JobResponse(

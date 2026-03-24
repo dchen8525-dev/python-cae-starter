@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
 import logging
 import os
 from pathlib import Path
@@ -9,7 +8,7 @@ import subprocess
 from typing import Callable
 
 from app.adapters.base import BaseCAEAdapter
-from app.core.models import JobRecord
+from app.core.models import JobRecord, local_now_iso
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,7 @@ class ProcessRunner:
             creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
         with log_file.open("a", encoding="utf-8") as handle:
-            started_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            started_at = local_now_iso()
             handle.write(f"# started_at={started_at}\n")
             handle.write(f"# cwd={workspace_path}\n")
             handle.write(f"$ {command_line}\n")
