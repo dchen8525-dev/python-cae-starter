@@ -114,6 +114,62 @@ def test_ansa_adapter_builds_command(test_environment: dict[str, object]) -> Non
     assert "-mesa" in command
 
 
+def test_ansa_adapter_quotes_execpy_paths_with_spaces(test_environment: dict[str, object]) -> None:
+    tmp_path = test_environment["tmp_path"]
+    assert isinstance(tmp_path, Path)
+
+    tools_dir = tmp_path / "Program Files"
+    tools_dir.mkdir(parents=True, exist_ok=True)
+    launcher = tools_dir / "ansa64.bat"
+    launcher.write_text("@echo off\n", encoding="utf-8")
+
+    scripts_dir = tmp_path / "batch scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    script_file = scripts_dir / "run ansa.py"
+    script_file.write_text("print('ansa batch script')\n", encoding="utf-8")
+
+    models_dir = tmp_path / "input models"
+    models_dir.mkdir(parents=True, exist_ok=True)
+    input_file = models_dir / "demo model.ansa"
+    input_file.write_text("dummy ansa content\n", encoding="utf-8")
+
+    from app.core.config import settings
+    original_executable = settings.ansa_executable
+    original_script_file = settings.ansa_script_file
+    settings.ansa_executable = str(launcher)
+    settings.ansa_script_file = str(script_file)
+    try:
+        adapter = AnsaAdapter()
+        job_response = job_manager.create_job(
+            JobCreateRequest(
+                job_name="ansa-job-spaces",
+                tool="ansa",
+                params={
+                    "input_file": str(input_file),
+                    "script_args": ["--deck", "NASTRAN SOL 101"],
+                    "extra_args": ["-mesa"],
+                    "no_gui": True,
+                },
+            )
+        )
+
+        queued_coroutines = test_environment["queued_coroutines"]
+        assert isinstance(queued_coroutines, list)
+        assert len(queued_coroutines) == 1
+        asyncio.run(queued_coroutines[0])
+
+        record = job_manager.get_job(job_response.job_id)
+        command = adapter.build_command(record)
+    finally:
+        settings.ansa_executable = original_executable
+        settings.ansa_script_file = original_script_file
+
+    execpy_value = command[command.index("-execpy") + 1]
+    assert f'load_script:"{script_file}"' in execpy_value
+    assert f'"{input_file}"' in execpy_value
+    assert '"NASTRAN SOL 101"' in execpy_value
+
+
 def test_unknown_tool_returns_400(test_environment: dict[str, object]) -> None:
     with pytest.raises(HTTPException) as exc_info:
         job_manager.create_job(

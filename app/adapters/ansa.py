@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
@@ -64,11 +65,13 @@ class AnsaAdapter(BaseCAEAdapter):
         if params.no_gui:
             command.extend(settings.ansa_batch_flags)
 
-        execpy_value = f"{settings.ansa_execpy_prefix.rstrip()}{params.script_file}"
+        execpy_parts = [
+            f"{settings.ansa_execpy_prefix.rstrip()}{self._quote_execpy_arg(params.script_file)}"
+        ]
         if params.input_file:
-            execpy_value += f" {params.input_file}"
-        if params.script_args:
-            execpy_value += " " + " ".join(params.script_args)
+            execpy_parts.append(self._quote_execpy_arg(params.input_file))
+        execpy_parts.extend(self._quote_execpy_arg(arg) for arg in params.script_args)
+        execpy_value = " ".join(execpy_parts)
         command.extend(["-execpy", execpy_value])
         command.extend(params.extra_args)
         return command
@@ -112,3 +115,9 @@ class AnsaAdapter(BaseCAEAdapter):
             "ANSA executable is not configured. Set ANSA_EXECUTABLE in .env "
             "to your ANSA v24.1.3 launcher, for example ansa64.bat or ansa64.exe."
         )
+
+    @staticmethod
+    def _quote_execpy_arg(value: str) -> str:
+        """Quote an -execpy argument so paths with spaces survive ANSA parsing."""
+
+        return subprocess.list2cmdline([value])
