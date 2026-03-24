@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local CAE Job Service</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: #fffdf8;
+      --ink: #1f2937;
+      --accent: #9a3412;
+      --accent-2: #0f766e;
+      --border: #d6cab8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(154,52,18,0.12), transparent 25%),
+        radial-gradient(circle at top right, rgba(15,118,110,0.10), transparent 25%),
+        var(--bg);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .hero {
+      background: linear-gradient(135deg, rgba(154,52,18,0.95), rgba(127,29,29,0.92));
+      color: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 18px 40px rgba(127,29,29,0.18);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+    input, select, button, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      margin-top: 12px;
+    }
+    button.secondary {
+      background: var(--accent-2);
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 220px;
+      max-height: 420px;
+      overflow: auto;
+      background: #1a1f1d;
+      color: #d1fae5;
+      padding: 14px;
+      border-radius: 14px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Local CAE Job Service</h1>
+      <p>用于本地调试 `dummy_solver` 和 `ansa` 的最小前端页面。</p>
+    </section>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>提交任务</h2>
+        <label for="jobName">Job Name</label>
+        <input id="jobName" value="demo-job" />
+
+        <label for="tool">Tool</label>
+        <select id="tool">
+          <option value="ansa">ansa</option>
+          <option value="dummy_solver">dummy_solver</option>
+        </select>
+
+        <div id="dummyFields" class="row">
+          <div>
+            <label for="duration">Duration</label>
+            <input id="duration" type="number" min="1" value="10" />
+          </div>
+          <div>
+            <label for="fail">Fail</label>
+            <select id="fail">
+              <option value="false">false</option>
+              <option value="true">true</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="ansaFields" class="hidden">
+          <p style="margin: 0 0 12px;">ANSA script path comes from server config `ANSA_SCRIPT_FILE`.</p>
+
+          <label for="inputFile">ANSA Input File</label>
+          <input id="inputFile" placeholder="C:\\models\\demo.ansa" />
+
+          <label for="scriptArgs">Script Args</label>
+          <input id="scriptArgs" placeholder="arg1 arg2" />
+
+          <label for="extraArgs">Extra Args</label>
+          <input id="extraArgs" placeholder="-mesa -debug" />
+        </div>
+
+        <button id="submitBtn">提交任务</button>
+
+        <label for="jobId">当前 Job ID</label>
+        <input id="jobId" placeholder="提交后自动填充，也可手动输入" />
+
+        <button id="statusBtn" class="secondary">查询状态</button>
+        <button id="wsBtn">连接日志 WebSocket</button>
+      </section>
+
+      <section class="panel">
+        <h2>任务状态</h2>
+        <pre id="statusOutput"></pre>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 16px;">
+      <h2>实时日志</h2>
+      <pre id="logOutput"></pre>
+    </section>
+  </div>
+
+  <script>
+    const baseUrl = "http://127.0.0.1:8765";
+    const wsBaseUrl = "ws://127.0.0.1:8765";
+    let socket = null;
+
+    function splitArgs(value) {
+      return value
+        .split(/\s+/)
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    function updateToolFields() {
+      const tool = document.getElementById("tool").value;
+      document.getElementById("dummyFields").classList.toggle("hidden", tool !== "dummy_solver");
+      document.getElementById("ansaFields").classList.toggle("hidden", tool !== "ansa");
+    }
+
+    async function submitJob() {
+      const tool = document.getElementById("tool").value;
+      let params;
+      if (tool === "ansa") {
+        params = {
+          input_file: document.getElementById("inputFile").value.trim() || null,
+          script_args: splitArgs(document.getElementById("scriptArgs").value),
+          extra_args: splitArgs(document.getElementById("extraArgs").value),
+          no_gui: true
+        };
+      } else {
+        params = {
+          duration: Number(document.getElementById("duration").value),
+          fail: document.getElementById("fail").value === "true"
+        };
+      }
+
+      const payload = {
+        job_name: document.getElementById("jobName").value.trim(),
+        tool,
+        params
+      };
+
+      const response = await fetch(`${baseUrl}/jobs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      document.getElementById("statusOutput").textContent = JSON.stringify(data, null, 2);
+      if (response.ok && data.job_id) {
+        document.getElementById("jobId").value = data.job_id;
+      }
+    }
+
+    async function queryStatus() {
+      const jobId = document.getElementById("jobId").value.trim();
+      if (!jobId) {
+        alert("请先输入 job_id");
+        return;
+      }
+
+      const response = await fetch(`${baseUrl}/jobs/${jobId}`);
+      const data = await response.json();
+      document.getElementById("statusOutput").textContent = JSON.stringify(data, null, 2);
+    }
+
+    function connectLogs() {
+      const jobId = document.getElementById("jobId").value.trim();
+      if (!jobId) {
+        alert("请先输入 job_id");
+        return;
+      }
+
+      if (socket) {
+        socket.close();
+      }
+
+      document.getElementById("logOutput").textContent = "";
+      socket = new WebSocket(`${wsBaseUrl}/ws/jobs/${jobId}`);
+
+      socket.onmessage = (event) => {
+        document.getElementById("logOutput").textContent += event.data;
+      };
+
+      socket.onerror = () => {
+        document.getElementById("logOutput").textContent += "\n[WebSocket error]\n";
+      };
+
+      socket.onclose = () => {
+        document.getElementById("logOutput").textContent += "\n[WebSocket closed]\n";
+      };
+    }
+
+    document.getElementById("submitBtn").addEventListener("click", submitJob);
+    document.getElementById("statusBtn").addEventListener("click", queryStatus);
+    document.getElementById("wsBtn").addEventListener("click", connectLogs);
+    document.getElementById("tool").addEventListener("change", updateToolFields);
+    updateToolFields();
+  </script>
+</body>
+</html>
