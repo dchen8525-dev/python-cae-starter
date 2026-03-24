@@ -3,260 +3,827 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Local CAE Job Service</title>
+  <title>CAE Mission Console</title>
   <style>
     :root {
-      --bg: #f4efe7;
-      --panel: #fffdf8;
-      --ink: #1f2937;
-      --accent: #9a3412;
-      --accent-2: #0f766e;
-      --border: #d6cab8;
+      --bg: #07111f;
+      --bg-deep: #030814;
+      --panel: rgba(9, 20, 37, 0.78);
+      --panel-strong: rgba(8, 18, 34, 0.92);
+      --line: rgba(96, 168, 255, 0.2);
+      --line-strong: rgba(96, 168, 255, 0.45);
+      --text: #d8e8ff;
+      --muted: #7f96ba;
+      --cyan: #59f0ff;
+      --blue: #5f8cff;
+      --green: #4cffb2;
+      --amber: #ffbf69;
+      --danger: #ff5f7a;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      font-family: "Segoe UI", "PingFang SC", sans-serif;
-      color: var(--ink);
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Space Grotesk", "Segoe UI", "PingFang SC", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(154,52,18,0.12), transparent 25%),
-        radial-gradient(circle at top right, rgba(15,118,110,0.10), transparent 25%),
-        var(--bg);
+        radial-gradient(circle at 20% 20%, rgba(89, 240, 255, 0.14), transparent 24%),
+        radial-gradient(circle at 80% 0%, rgba(95, 140, 255, 0.16), transparent 26%),
+        linear-gradient(180deg, #08111f 0%, #030814 100%);
+      overflow-x: hidden;
     }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(95, 140, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(95, 140, 255, 0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at center, black 55%, transparent 100%);
     }
+
+    .shell {
+      width: min(1320px, calc(100% - 32px));
+      margin: 24px auto 40px;
+      position: relative;
+    }
+
     .hero {
-      background: linear-gradient(135deg, rgba(154,52,18,0.95), rgba(127,29,29,0.92));
-      color: #fff;
-      border-radius: 20px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 18px 40px rgba(127,29,29,0.18);
+      position: relative;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(17, 39, 70, 0.88), rgba(6, 12, 24, 0.96)),
+        var(--panel-strong);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
-    .grid {
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -45% 30%;
+      height: 220px;
+      background: radial-gradient(circle, rgba(89, 240, 255, 0.18), transparent 62%);
+      filter: blur(14px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(89, 240, 255, 0.28);
+      background: rgba(89, 240, 255, 0.08);
+      color: var(--cyan);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(34px, 6vw, 68px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 760px;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .hero-grid {
+      margin-top: 24px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
     }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
+
+    .stat {
+      padding: 14px 16px;
       border-radius: 18px;
-      padding: 18px;
+      border: 1px solid var(--line);
+      background: rgba(7, 15, 29, 0.6);
+      backdrop-filter: blur(10px);
     }
-    label {
+
+    .stat-label {
       display: block;
-      margin: 12px 0 6px;
-      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
     }
-    input, select, button, textarea {
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .workspace {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .panel {
+      position: relative;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(95, 140, 255, 0.05), transparent 28%);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px 0;
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+
+    .panel-note {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .panel-body {
+      padding: 18px 20px 20px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
+      padding: 13px 14px;
+      border: 1px solid rgba(96, 168, 255, 0.16);
+      border-radius: 16px;
+      background: rgba(6, 12, 23, 0.86);
+      color: var(--text);
       font: inherit;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
     }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 4px rgba(89, 240, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .field textarea {
+      min-height: 104px;
+      resize: vertical;
+    }
+
+    .hint {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .chip-row,
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(9, 20, 37, 0.78);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .chip strong {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--amber);
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .status-dot.success { background: var(--green); }
+    .status-dot.running { background: var(--cyan); }
+    .status-dot.failed,
+    .status-dot.cancelled { background: var(--danger); }
+
     button {
+      appearance: none;
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 16px;
+      font: inherit;
+      font-weight: 700;
+      color: #03101c;
       cursor: pointer;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      margin-top: 12px;
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
     }
-    button.secondary {
-      background: var(--accent-2);
+
+    button:hover {
+      transform: translateY(-1px);
     }
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      min-height: 220px;
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+      transform: none;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--cyan), #a9f4ff);
+      box-shadow: 0 14px 34px rgba(89, 240, 255, 0.24);
+    }
+
+    .secondary {
+      color: var(--text);
+      background: linear-gradient(135deg, rgba(95, 140, 255, 0.18), rgba(95, 140, 255, 0.08));
+      border: 1px solid rgba(95, 140, 255, 0.2);
+    }
+
+    .danger {
+      color: #ffe5eb;
+      background: linear-gradient(135deg, rgba(255, 95, 122, 0.22), rgba(255, 95, 122, 0.1));
+      border: 1px solid rgba(255, 95, 122, 0.24);
+    }
+
+    .console-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+      gap: 18px;
+    }
+
+    .screen {
+      min-height: 240px;
       max-height: 420px;
       overflow: auto;
-      background: #1a1f1d;
-      color: #d1fae5;
-      padding: 14px;
-      border-radius: 14px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(96, 168, 255, 0.12);
+      background:
+        linear-gradient(180deg, rgba(10, 18, 34, 0.96), rgba(5, 10, 19, 0.98));
+      color: #dff7ff;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: "IBM Plex Mono", "Consolas", monospace;
+      font-size: 13px;
+      line-height: 1.65;
     }
-    .row {
+
+    .timeline {
       display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+
+    .timeline-item {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(96, 168, 255, 0.12);
+      background: rgba(5, 12, 23, 0.72);
+    }
+
+    .timeline-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+    }
+
+    .timeline-item span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
     .hidden {
       display: none;
+    }
+
+    .fade-in {
+      animation: fade-in 480ms ease;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .workspace,
+      .console-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 20px, 1320px);
+        margin-top: 10px;
+      }
+
+      .hero,
+      .panel-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .panel-head {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 34px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <section class="hero">
-      <h1>Local CAE Job Service</h1>
-      <p>用于本地调试 `dummy_solver` 和 `ansa` 的最小前端页面。</p>
+  <main class="shell">
+    <section class="hero fade-in">
+      <div class="eyebrow">CAE Mission Console</div>
+      <h1>面向本地仿真任务的科技控制台</h1>
+      <p>原生 JavaScript 驱动，直接调用本地 CAE Job Service。用于发起任务、跟踪状态、取消运行中的作业，并实时查看 WebSocket 日志流。</p>
+      <div class="hero-grid">
+        <div class="stat">
+          <span class="stat-label">API Endpoint</span>
+          <div class="stat-value" id="apiStat">127.0.0.1:8765</div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Selected Tool</span>
+          <div class="stat-value" id="toolStat">ANSA</div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Job Status</span>
+          <div class="stat-value" id="heroStatus">Idle</div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Telemetry</span>
+          <div class="stat-value" id="socketState">Disconnected</div>
+        </div>
+      </div>
     </section>
 
-    <div class="grid">
-      <section class="panel">
-        <h2>提交任务</h2>
-        <label for="jobName">Job Name</label>
-        <input id="jobName" value="demo-job" />
-
-        <label for="tool">Tool</label>
-        <select id="tool">
-          <option value="ansa">ansa</option>
-          <option value="dummy_solver">dummy_solver</option>
-        </select>
-
-        <div id="dummyFields" class="row">
-          <div>
-            <label for="duration">Duration</label>
-            <input id="duration" type="number" min="1" value="10" />
+    <section class="workspace">
+      <article class="panel fade-in">
+        <div class="panel-head">
+          <h2>任务编排</h2>
+          <span class="panel-note">Job Payload Builder</span>
+        </div>
+        <div class="panel-body stack">
+          <div class="field">
+            <label for="baseUrl">Base URL</label>
+            <input id="baseUrl" value="http://127.0.0.1:8765" />
           </div>
-          <div>
-            <label for="fail">Fail</label>
-            <select id="fail">
-              <option value="false">false</option>
-              <option value="true">true</option>
-            </select>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="jobName">Job Name</label>
+              <input id="jobName" value="demo-job" />
+            </div>
+            <div class="field">
+              <label for="tool">Tool</label>
+              <select id="tool">
+                <option value="ansa">ansa</option>
+                <option value="dummy_solver">dummy_solver</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="dummyFields" class="grid-2">
+            <div class="field">
+              <label for="duration">Duration</label>
+              <input id="duration" type="number" min="1" value="10" />
+            </div>
+            <div class="field">
+              <label for="fail">Fail Mode</label>
+              <select id="fail">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="ansaFields" class="stack">
+            <div class="field">
+              <label for="inputFile">ANSA Input File</label>
+              <input id="inputFile" placeholder="C:\\models\\demo.ansa" />
+            </div>
+            <div class="field">
+              <label for="scriptArgs">Script Args</label>
+              <input id="scriptArgs" placeholder="--deck NASTRAN --mode batch" />
+            </div>
+            <div class="field">
+              <label for="extraArgs">Extra Args</label>
+              <input id="extraArgs" placeholder="-mesa -debug" />
+            </div>
+            <p class="hint">`ANSA_SCRIPT_FILE` 由服务端配置决定，这里只传业务参数，不直接上传执行脚本路径。</p>
+          </div>
+
+          <div class="action-row">
+            <button id="submitBtn" class="primary">提交任务</button>
+            <button id="statusBtn" class="secondary">查询状态</button>
+            <button id="cancelBtn" class="danger">取消任务</button>
+          </div>
+
+          <div class="field">
+            <label for="jobId">Job ID</label>
+            <input id="jobId" placeholder="提交后自动回填，也可手动输入已有任务 ID" />
+          </div>
+
+          <div class="chip-row">
+            <div class="chip"><span class="status-dot" id="statusDot"></span><strong id="statusText">idle</strong></div>
+            <div class="chip">job <strong id="jobIdBadge">-</strong></div>
+            <div class="chip">tool <strong id="toolBadge">ansa</strong></div>
           </div>
         </div>
+      </article>
 
-        <div id="ansaFields" class="hidden">
-          <p style="margin: 0 0 12px;">ANSA script path comes from server config `ANSA_SCRIPT_FILE`.</p>
-
-          <label for="inputFile">ANSA Input File</label>
-          <input id="inputFile" placeholder="C:\\models\\demo.ansa" />
-
-          <label for="scriptArgs">Script Args</label>
-          <input id="scriptArgs" placeholder="arg1 arg2" />
-
-          <label for="extraArgs">Extra Args</label>
-          <input id="extraArgs" placeholder="-mesa -debug" />
+      <article class="panel fade-in">
+        <div class="panel-head">
+          <h2>运行态势</h2>
+          <span class="panel-note">Status + Stream</span>
         </div>
+        <div class="panel-body stack">
+          <div class="console-grid">
+            <div>
+              <h3>状态响应</h3>
+              <pre id="statusOutput" class="screen">等待任务提交...</pre>
+            </div>
+            <div>
+              <h3>操作步骤</h3>
+              <div id="timeline" class="timeline">
+                <div class="timeline-item">
+                  <strong>01 Configure</strong>
+                  <span>选择工具、填写参数，并确认目标服务地址。</span>
+                </div>
+                <div class="timeline-item">
+                  <strong>02 Dispatch</strong>
+                  <span>调用 `/jobs` 创建任务，返回 `job_id` 后进入监控。</span>
+                </div>
+                <div class="timeline-item">
+                  <strong>03 Observe</strong>
+                  <span>按需查询状态或连接 WebSocket 持续接收日志。</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <button id="submitBtn">提交任务</button>
+          <div class="action-row">
+            <button id="wsBtn" class="primary">连接日志流</button>
+            <button id="disconnectBtn" class="secondary">断开日志流</button>
+          </div>
 
-        <label for="jobId">当前 Job ID</label>
-        <input id="jobId" placeholder="提交后自动填充，也可手动输入" />
-
-        <button id="statusBtn" class="secondary">查询状态</button>
-        <button id="wsBtn">连接日志 WebSocket</button>
-      </section>
-
-      <section class="panel">
-        <h2>任务状态</h2>
-        <pre id="statusOutput"></pre>
-      </section>
-    </div>
-
-    <section class="panel" style="margin-top: 16px;">
-      <h2>实时日志</h2>
-      <pre id="logOutput"></pre>
+          <div>
+            <h3>实时日志</h3>
+            <pre id="logOutput" class="screen">等待 WebSocket 连接...</pre>
+          </div>
+        </div>
+      </article>
     </section>
-  </div>
+  </main>
 
   <script>
-    const baseUrl = "http://127.0.0.1:8765";
-    const wsBaseUrl = "ws://127.0.0.1:8765";
     let socket = null;
+
+    const elements = {
+      baseUrl: document.getElementById("baseUrl"),
+      jobName: document.getElementById("jobName"),
+      tool: document.getElementById("tool"),
+      duration: document.getElementById("duration"),
+      fail: document.getElementById("fail"),
+      inputFile: document.getElementById("inputFile"),
+      scriptArgs: document.getElementById("scriptArgs"),
+      extraArgs: document.getElementById("extraArgs"),
+      jobId: document.getElementById("jobId"),
+      submitBtn: document.getElementById("submitBtn"),
+      statusBtn: document.getElementById("statusBtn"),
+      cancelBtn: document.getElementById("cancelBtn"),
+      wsBtn: document.getElementById("wsBtn"),
+      disconnectBtn: document.getElementById("disconnectBtn"),
+      dummyFields: document.getElementById("dummyFields"),
+      ansaFields: document.getElementById("ansaFields"),
+      statusOutput: document.getElementById("statusOutput"),
+      logOutput: document.getElementById("logOutput"),
+      toolStat: document.getElementById("toolStat"),
+      heroStatus: document.getElementById("heroStatus"),
+      socketState: document.getElementById("socketState"),
+      statusDot: document.getElementById("statusDot"),
+      statusText: document.getElementById("statusText"),
+      jobIdBadge: document.getElementById("jobIdBadge"),
+      toolBadge: document.getElementById("toolBadge"),
+      apiStat: document.getElementById("apiStat"),
+      timeline: document.getElementById("timeline")
+    };
 
     function splitArgs(value) {
       return value
         .split(/\s+/)
-        .map(item => item.trim())
+        .map((item) => item.trim())
         .filter(Boolean);
     }
 
-    function updateToolFields() {
-      const tool = document.getElementById("tool").value;
-      document.getElementById("dummyFields").classList.toggle("hidden", tool !== "dummy_solver");
-      document.getElementById("ansaFields").classList.toggle("hidden", tool !== "ansa");
+    function getBaseUrl() {
+      return elements.baseUrl.value.trim().replace(/\/+$/, "") || "http://127.0.0.1:8765";
     }
 
-    async function submitJob() {
-      const tool = document.getElementById("tool").value;
-      let params;
-      if (tool === "ansa") {
-        params = {
-          input_file: document.getElementById("inputFile").value.trim() || null,
-          script_args: splitArgs(document.getElementById("scriptArgs").value),
-          extra_args: splitArgs(document.getElementById("extraArgs").value),
-          no_gui: true
-        };
-      } else {
-        params = {
-          duration: Number(document.getElementById("duration").value),
-          fail: document.getElementById("fail").value === "true"
-        };
-      }
+    function getWsBaseUrl() {
+      return getBaseUrl().replace(/^http/, "ws");
+    }
 
-      const payload = {
-        job_name: document.getElementById("jobName").value.trim(),
+    function setBusy(isBusy) {
+      elements.submitBtn.disabled = isBusy;
+      elements.statusBtn.disabled = isBusy;
+      elements.cancelBtn.disabled = isBusy;
+    }
+
+    function formatJson(data) {
+      return JSON.stringify(data, null, 2);
+    }
+
+    function setScreen(target, value) {
+      target.textContent = value;
+      target.scrollTop = target.scrollHeight;
+    }
+
+    function pushTimeline(title, message) {
+      const item = document.createElement("div");
+      item.className = "timeline-item fade-in";
+      item.innerHTML = `<strong>${title}</strong><span>${message}</span>`;
+      elements.timeline.prepend(item);
+      while (elements.timeline.children.length > 5) {
+        elements.timeline.removeChild(elements.timeline.lastChild);
+      }
+    }
+
+    function updateToolFields() {
+      const tool = elements.tool.value;
+      const isAnsa = tool === "ansa";
+      elements.dummyFields.classList.toggle("hidden", isAnsa);
+      elements.ansaFields.classList.toggle("hidden", !isAnsa);
+      elements.toolStat.textContent = isAnsa ? "ANSA" : "DUMMY";
+      elements.toolBadge.textContent = tool;
+    }
+
+    function updateStatusBadge(status) {
+      const safeStatus = (status || "idle").toLowerCase();
+      elements.statusText.textContent = safeStatus;
+      elements.heroStatus.textContent = safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1);
+      elements.statusDot.className = "status-dot";
+      if (["success", "running", "failed", "cancelled"].includes(safeStatus)) {
+        elements.statusDot.classList.add(safeStatus);
+      }
+    }
+
+    function syncMeta() {
+      elements.apiStat.textContent = getBaseUrl().replace(/^https?:\/\//, "");
+      elements.jobIdBadge.textContent = elements.jobId.value.trim() || "-";
+      elements.toolBadge.textContent = elements.tool.value;
+    }
+
+    function buildPayload() {
+      const tool = elements.tool.value;
+      const params = tool === "ansa"
+        ? {
+            input_file: elements.inputFile.value.trim() || null,
+            script_args: splitArgs(elements.scriptArgs.value),
+            extra_args: splitArgs(elements.extraArgs.value),
+            no_gui: true
+          }
+        : {
+            duration: Number(elements.duration.value),
+            fail: elements.fail.value === "true"
+          };
+
+      return {
+        job_name: elements.jobName.value.trim(),
         tool,
         params
       };
+    }
 
-      const response = await fetch(`${baseUrl}/jobs`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
+    async function requestJson(path, options) {
+      const response = await fetch(`${getBaseUrl()}${path}`, options);
       const data = await response.json();
-      document.getElementById("statusOutput").textContent = JSON.stringify(data, null, 2);
-      if (response.ok && data.job_id) {
-        document.getElementById("jobId").value = data.job_id;
+      if (!response.ok) {
+        throw new Error(data.detail || data.error || formatJson(data));
+      }
+      return data;
+    }
+
+    async function submitJob() {
+      setBusy(true);
+      pushTimeline("Dispatch", "正在提交新任务到 `/jobs`。");
+      try {
+        const data = await requestJson("/jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload())
+        });
+        elements.jobId.value = data.job_id || "";
+        syncMeta();
+        updateStatusBadge(data.status);
+        setScreen(elements.statusOutput, formatJson(data));
+        pushTimeline("Accepted", `任务已创建，job_id=${data.job_id}`);
+      } catch (error) {
+        updateStatusBadge("failed");
+        setScreen(elements.statusOutput, `[submit failed]\n${error.message}`);
+        pushTimeline("Submit Failed", error.message);
+      } finally {
+        setBusy(false);
       }
     }
 
     async function queryStatus() {
-      const jobId = document.getElementById("jobId").value.trim();
+      const jobId = elements.jobId.value.trim();
       if (!jobId) {
-        alert("请先输入 job_id");
+        window.alert("请先输入或提交 job_id");
         return;
       }
 
-      const response = await fetch(`${baseUrl}/jobs/${jobId}`);
-      const data = await response.json();
-      document.getElementById("statusOutput").textContent = JSON.stringify(data, null, 2);
+      setBusy(true);
+      pushTimeline("Status Probe", `查询任务 ${jobId} 的最新状态。`);
+      try {
+        const data = await requestJson(`/jobs/${jobId}`);
+        updateStatusBadge(data.status);
+        setScreen(elements.statusOutput, formatJson(data));
+        pushTimeline("Status Updated", `当前状态为 ${data.status}。`);
+      } catch (error) {
+        setScreen(elements.statusOutput, `[status failed]\n${error.message}`);
+        pushTimeline("Status Failed", error.message);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function cancelJob() {
+      const jobId = elements.jobId.value.trim();
+      if (!jobId) {
+        window.alert("请先输入或提交 job_id");
+        return;
+      }
+
+      setBusy(true);
+      pushTimeline("Cancel", `请求取消任务 ${jobId}。`);
+      try {
+        const data = await requestJson(`/jobs/${jobId}/cancel`, { method: "POST" });
+        updateStatusBadge(data.status);
+        setScreen(elements.statusOutput, formatJson(data));
+        pushTimeline("Cancel Accepted", `任务 ${jobId} 已收到取消请求。`);
+      } catch (error) {
+        setScreen(elements.statusOutput, `[cancel failed]\n${error.message}`);
+        pushTimeline("Cancel Failed", error.message);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function disconnectLogs(reason) {
+      if (socket) {
+        socket.close();
+        socket = null;
+      }
+      elements.socketState.textContent = reason || "Disconnected";
     }
 
     function connectLogs() {
-      const jobId = document.getElementById("jobId").value.trim();
+      const jobId = elements.jobId.value.trim();
       if (!jobId) {
-        alert("请先输入 job_id");
+        window.alert("请先输入或提交 job_id");
         return;
       }
 
-      if (socket) {
-        socket.close();
-      }
+      disconnectLogs("Reconnecting");
+      setScreen(elements.logOutput, "");
+      pushTimeline("Log Stream", `连接任务 ${jobId} 的 WebSocket 日志流。`);
 
-      document.getElementById("logOutput").textContent = "";
-      socket = new WebSocket(`${wsBaseUrl}/ws/jobs/${jobId}`);
+      socket = new WebSocket(`${getWsBaseUrl()}/ws/jobs/${jobId}`);
+      elements.socketState.textContent = "Connecting";
+
+      socket.onopen = () => {
+        elements.socketState.textContent = "Live";
+        pushTimeline("Telemetry Live", "日志链路已建立。");
+      };
 
       socket.onmessage = (event) => {
-        document.getElementById("logOutput").textContent += event.data;
+        elements.logOutput.textContent += event.data;
+        elements.logOutput.scrollTop = elements.logOutput.scrollHeight;
       };
 
       socket.onerror = () => {
-        document.getElementById("logOutput").textContent += "\n[WebSocket error]\n";
+        elements.logOutput.textContent += "\n[websocket error]\n";
+        elements.socketState.textContent = "Error";
+        pushTimeline("Telemetry Error", "WebSocket 连接发生错误。");
       };
 
       socket.onclose = () => {
-        document.getElementById("logOutput").textContent += "\n[WebSocket closed]\n";
+        elements.logOutput.textContent += "\n[websocket closed]\n";
+        elements.socketState.textContent = "Closed";
+        pushTimeline("Telemetry Closed", "日志链路已关闭。");
       };
     }
 
-    document.getElementById("submitBtn").addEventListener("click", submitJob);
-    document.getElementById("statusBtn").addEventListener("click", queryStatus);
-    document.getElementById("wsBtn").addEventListener("click", connectLogs);
-    document.getElementById("tool").addEventListener("change", updateToolFields);
+    elements.submitBtn.addEventListener("click", submitJob);
+    elements.statusBtn.addEventListener("click", queryStatus);
+    elements.cancelBtn.addEventListener("click", cancelJob);
+    elements.wsBtn.addEventListener("click", connectLogs);
+    elements.disconnectBtn.addEventListener("click", () => disconnectLogs("Disconnected"));
+    elements.tool.addEventListener("change", () => {
+      updateToolFields();
+      syncMeta();
+    });
+    elements.baseUrl.addEventListener("input", syncMeta);
+    elements.jobId.addEventListener("input", syncMeta);
+
     updateToolFields();
+    syncMeta();
+    updateStatusBadge("idle");
   </script>
 </body>
 </html>
