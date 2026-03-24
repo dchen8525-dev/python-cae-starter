@@ -6,20 +6,20 @@
   <title>CAE Mission Console</title>
   <style>
     :root {
-      --bg: #07111f;
-      --bg-deep: #030814;
-      --panel: rgba(9, 20, 37, 0.78);
-      --panel-strong: rgba(8, 18, 34, 0.92);
-      --line: rgba(96, 168, 255, 0.2);
-      --line-strong: rgba(96, 168, 255, 0.45);
-      --text: #d8e8ff;
-      --muted: #7f96ba;
+      --bg: #dff1ff;
+      --bg-deep: #f5fbff;
+      --panel: rgba(255, 255, 255, 0.76);
+      --panel-strong: rgba(244, 250, 255, 0.92);
+      --line: rgba(66, 124, 214, 0.16);
+      --line-strong: rgba(55, 122, 224, 0.34);
+      --text: #12233f;
+      --muted: #506784;
       --cyan: #59f0ff;
       --blue: #5f8cff;
       --green: #4cffb2;
       --amber: #ffbf69;
       --danger: #ff5f7a;
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --shadow: 0 24px 80px rgba(18, 53, 102, 0.14);
     }
 
     * {
@@ -36,9 +36,9 @@
       color: var(--text);
       font-family: "Space Grotesk", "Segoe UI", "PingFang SC", sans-serif;
       background:
-        radial-gradient(circle at 20% 20%, rgba(89, 240, 255, 0.14), transparent 24%),
-        radial-gradient(circle at 80% 0%, rgba(95, 140, 255, 0.16), transparent 26%),
-        linear-gradient(180deg, #08111f 0%, #030814 100%);
+        radial-gradient(circle at 20% 20%, rgba(89, 240, 255, 0.18), transparent 24%),
+        radial-gradient(circle at 80% 0%, rgba(95, 140, 255, 0.18), transparent 26%),
+        linear-gradient(180deg, #eef8ff 0%, #dceeff 100%);
       overflow-x: hidden;
     }
 
@@ -48,8 +48,8 @@
       inset: 0;
       pointer-events: none;
       background-image:
-        linear-gradient(rgba(95, 140, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(95, 140, 255, 0.06) 1px, transparent 1px);
+        linear-gradient(rgba(95, 140, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(95, 140, 255, 0.08) 1px, transparent 1px);
       background-size: 48px 48px;
       mask-image: radial-gradient(circle at center, black 55%, transparent 100%);
     }
@@ -66,7 +66,7 @@
       border: 1px solid var(--line);
       border-radius: 28px;
       background:
-        linear-gradient(135deg, rgba(17, 39, 70, 0.88), rgba(6, 12, 24, 0.96)),
+        linear-gradient(135deg, rgba(239, 249, 255, 0.96), rgba(221, 238, 255, 0.96)),
         var(--panel-strong);
       box-shadow: var(--shadow);
       overflow: hidden;
@@ -88,7 +88,7 @@
       padding: 6px 12px;
       border-radius: 999px;
       border: 1px solid rgba(89, 240, 255, 0.28);
-      background: rgba(89, 240, 255, 0.08);
+      background: rgba(89, 240, 255, 0.14);
       color: var(--cyan);
       font-size: 12px;
       letter-spacing: 0.18em;
@@ -122,7 +122,7 @@
       padding: 14px 16px;
       border-radius: 18px;
       border: 1px solid var(--line);
-      background: rgba(7, 15, 29, 0.6);
+      background: rgba(255, 255, 255, 0.62);
       backdrop-filter: blur(10px);
     }
 
@@ -162,7 +162,7 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      background: linear-gradient(180deg, rgba(95, 140, 255, 0.05), transparent 28%);
+      background: linear-gradient(180deg, rgba(95, 140, 255, 0.08), transparent 28%);
     }
 
     .panel-head {
@@ -216,9 +216,9 @@
     .field textarea {
       width: 100%;
       padding: 13px 14px;
-      border: 1px solid rgba(96, 168, 255, 0.16);
+      border: 1px solid rgba(66, 124, 214, 0.18);
       border-radius: 16px;
-      background: rgba(6, 12, 23, 0.86);
+      background: rgba(255, 255, 255, 0.9);
       color: var(--text);
       font: inherit;
       outline: none;
@@ -229,7 +229,7 @@
     .field select:focus,
     .field textarea:focus {
       border-color: var(--line-strong);
-      box-shadow: 0 0 0 4px rgba(89, 240, 255, 0.08);
+      box-shadow: 0 0 0 4px rgba(89, 240, 255, 0.12);
       transform: translateY(-1px);
     }
 
@@ -259,7 +259,7 @@
       padding: 8px 12px;
       border-radius: 999px;
       border: 1px solid var(--line);
-      background: rgba(9, 20, 37, 0.78);
+      background: rgba(255, 255, 255, 0.82);
       color: var(--muted);
       font-size: 12px;
     }
@@ -289,7 +289,7 @@
       padding: 13px 16px;
       font: inherit;
       font-weight: 700;
-      color: #03101c;
+      color: #07213f;
       cursor: pointer;
       transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
     }
@@ -311,8 +311,8 @@
 
     .secondary {
       color: var(--text);
-      background: linear-gradient(135deg, rgba(95, 140, 255, 0.18), rgba(95, 140, 255, 0.08));
-      border: 1px solid rgba(95, 140, 255, 0.2);
+      background: linear-gradient(135deg, rgba(95, 140, 255, 0.22), rgba(95, 140, 255, 0.12));
+      border: 1px solid rgba(95, 140, 255, 0.24);
     }
 
     .danger {
@@ -333,10 +333,10 @@
       overflow: auto;
       padding: 18px;
       border-radius: 20px;
-      border: 1px solid rgba(96, 168, 255, 0.12);
+      border: 1px solid rgba(64, 124, 214, 0.14);
       background:
-        linear-gradient(180deg, rgba(10, 18, 34, 0.96), rgba(5, 10, 19, 0.98));
-      color: #dff7ff;
+        linear-gradient(180deg, rgba(19, 34, 59, 0.96), rgba(10, 19, 35, 0.98));
+      color: #ecf7ff;
       white-space: pre-wrap;
       word-break: break-word;
       font-family: "IBM Plex Mono", "Consolas", monospace;
@@ -352,8 +352,8 @@
     .timeline-item {
       padding: 14px;
       border-radius: 18px;
-      border: 1px solid rgba(96, 168, 255, 0.12);
-      background: rgba(5, 12, 23, 0.72);
+      border: 1px solid rgba(64, 124, 214, 0.14);
+      background: rgba(255, 255, 255, 0.68);
     }
 
     .timeline-item strong {
@@ -428,7 +428,7 @@
   <main class="shell">
     <section class="hero fade-in">
       <div class="eyebrow">CAE Mission Console</div>
-      <h1>面向本地仿真任务的科技控制台</h1>
+      <h1>控制台</h1>
       <p>原生 JavaScript 驱动，直接调用本地 CAE Job Service。用于发起任务、跟踪状态、取消运行中的作业，并实时查看 WebSocket 日志流。</p>
       <div class="hero-grid">
         <div class="stat">
