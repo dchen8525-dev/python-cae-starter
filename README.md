@@ -70,12 +70,40 @@ Windows PowerShell 可改为：
 Copy-Item .env.example .env
 ```
 
+Windows 10 如果通过 `py` 启动 Python，可直接执行：
+
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+py -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
 ## 启动方式
 
 使用 uvicorn 启动：
 
 ```bash
 uvicorn app.main:app --host 127.0.0.1 --port 8765
+```
+
+Windows 10 PowerShell 使用 `py` 启动：
+
+```powershell
+py -m uvicorn app.main:app --host 127.0.0.1 --port 8765
+```
+
+也可以直接使用仓库自带脚本：
+
+```powershell
+.\run.ps1
+```
+
+如果 PowerShell 阻止脚本执行，可先在当前会话执行：
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\run.ps1
 ```
 
 启动后可访问：
